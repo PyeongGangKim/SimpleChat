@@ -43,21 +43,46 @@ class ChatThread extends Thread{
 			System.out.println(ex);
 		}
 	} // construcor
+	/*
+	 금지를 시키고 싶은 단어를 String arry에 저장한다음 String array를 받아서 비교를 해서 인덱스가 있다면 
+	 prohibiWord메소드를 실행하고 checkMethod를 false로 바꿔서 다음 method들이 실행 못하게 한다.
+	  */
 	public void run(){
 		try{
 			String line = null;
+			boolean checkTheMethod=false;
+			String[] prohibit={"hello","what","why","how","when","where"};
 			while((line = br.readLine()) != null){
 				if(line.equals("/quit"))
 					break;
-				if(line.equals("hello")||line.equals("what")||line.equals("why")||line.equals("how")||line.equals("when")||line.equals("where")) {
-					prohibitWord();
-				}else if(line.indexOf("/to ") == 0){
-					sendmsg(line);
+				for(String check:prohibit) {
+					checkTheMethod=true;
+					if(line.indexOf(check)!= -1) {
+						checkTheMethod=false;
+						prohibitWord();
+						break;
+					}
+				}
+				if(checkTheMethod) {
+				if(line.indexOf("/to ") == 0){
+					for(String check:prohibit) {
+						checkTheMethod=true;
+						if(line.indexOf(check) != -1) {
+							checkTheMethod=false;
+							prohibitWord();
+							break;
+						}
+					}
+					if(checkTheMethod) { 
+						sendmsg(line);
+					}
 				}else if(line.equals("/userlist")) {
 					send_userlist();
-				}else 
+				}else { 
 					broadcast(id + " : " + line);
+				}
 			}
+		}
 		}catch(Exception ex){
 			System.out.println(ex);
 		}finally{
@@ -94,7 +119,7 @@ class ChatThread extends Thread{
 	public void broadcast(String msg){
 		synchronized(hm){
 			Collection collection =hm.keySet();
-			Iterator iter = collection.iterator();
+			Iterator iter = collection.iterator(); 	
 			while(iter.hasNext()){
 				String key = (String)iter.next();
 				if(!(id.equals(key))) {
@@ -127,6 +152,11 @@ class ChatThread extends Thread{
 		}
 		
 	}
+	/*
+	 금지 단어가 들어오면 그 금지 단어를 쓴 사용자에게 사용하지 말라는 문구를 보내야지
+	 사용자는 send_userlist처럼 찾아서 보내면 되겠다.
+	 */
+	
 	public void prohibitWord() {
 		PrintWriter object=(PrintWriter)hm.get(id);
 		String msg="don't use that word";
